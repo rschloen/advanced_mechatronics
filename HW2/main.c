@@ -34,14 +34,13 @@
 #pragma config PMDL1WAY = OFF // allow multiple reconfigurations
 #pragma config IOL1WAY = OFF // allow multiple reconfigurations
 
-//void initSPI();
-//unsigned char spi_io(unsigned char o);
+
 #define NUMSAMPS 100
 #define PI 3.14159
-static volatile float Waveform[NUMSAMPS];
+static volatile float SINE[NUMSAMPS],TRI[NUMSAMPS];
 
-void delay(void){
-    while(_CP0_GET_COUNT() < 24000000/10);
+void delay(int t){
+    while(_CP0_GET_COUNT() < 24000000/t);
 }
 
 unsigned short percentWave(float z){
@@ -50,13 +49,20 @@ unsigned short percentWave(float z){
     return 4095*per; //represent percentage as short
 }
 
-void makeSineWaveform(){
-    int i = 0,j=0;
+void makeWaveform(){
+    int i = 0;
+    float t=0,f;
     for (i = 0;i < NUMSAMPS; ++i){
-        Waveform[i] = 1.65*sin(4*PI*j)+1.65;
-        j=j+0.01;
+        SINE[i] = 1.65*sin(4*PI*t)+1.65; //sin(2*pi*2hz*t) 2 Hz sine wave 
+        f = 3.3*2*(t-floor(t+.5)); //1 Hz triangle wave (absolute value of sawtooth)
+        if (f<0){ //absolute value for float
+            f = -f;
+        }
+        TRI[i] = f;
+        t=t+0.01; //time
     }
 }
+
 
 unsigned short genAnalogSig(unsigned char channel, unsigned short volt){
     unsigned short p=0;
@@ -90,28 +96,26 @@ int main() {
     initSPI();
 
     __builtin_enable_interrupts();
-    makeSineWaveform();
+    makeWaveform();
     unsigned char i = 0;
     unsigned short v,a,b;
-    float x;
+
     while (1) {
-        for(i=0;i<NUMSAMPS;++i){
-            v = percentWave(Waveform[i]);
+        for(i=0;i<NUMSAMPS;++i){ //Loop through signal
+            v = percentWave(SINE[i]); //Get volt as short
             a = genAnalogSig(0,v);// DACa = 0
-            v = percentWave(2.5);
+            v = percentWave(TRI[i]); //Get volt as short
             b = genAnalogSig(1,v);// DACb = 1
             LATAbits.LATA0 = 0;
-            spi_io(a>>8);
-            spi_io(a);
+            spi_io(a>>8); //send highest 8 bits of short
+            spi_io(a); //send last 8 bits of short
             LATAbits.LATA0 = 1;
-            _CP0_SET_COUNT(0);
-            delay();
             LATAbits.LATA0 = 0;
             spi_io(b>>8);
             spi_io(b);
             LATAbits.LATA0 = 1;
             _CP0_SET_COUNT(0);
-            delay();
+            delay(100); //wait 100th of a second
         }
     }
 }
