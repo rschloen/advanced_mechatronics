@@ -62,7 +62,7 @@ void i2c_master_stop(void) { // send a STOP:
 
 void writePin(unsigned char adr, unsigned char reg, unsigned char val){
     i2c_master_start();
-    adr = adr | 0; //Force address to set to write
+//    adr = adr | 0; //Force address to set to write
     i2c_master_send(adr);
     i2c_master_send(reg);
     i2c_master_send(val);
@@ -72,14 +72,14 @@ void writePin(unsigned char adr, unsigned char reg, unsigned char val){
 unsigned char readPin(unsigned char adr, unsigned char reg){
     unsigned char val;
     i2c_master_start();
-    adr = adr | 0; //Force address to set to write
+//    adr = adr & 0x00; //Force address to set to write
     i2c_master_send(adr);
     i2c_master_send(reg);
     i2c_master_restart();
-    adr = adr |1; //Force address to set to read
+    adr = adr | 0b00000001; //Force address to set to read
     i2c_master_send(adr);
     val = i2c_master_recv();
-    i2c_master_ack(0);
+    i2c_master_ack(1);
     i2c_master_stop();
     return val;
 }
