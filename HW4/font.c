@@ -25,7 +25,7 @@ void drawString(char x, char y, char * m){
     while(m[c] != 0){
         drawChar(x+i,y+j,m[c]);
         if (x+i < 128){
-            i = i+6;
+            i = i+5;
         } else{
             x = 0;
             i = 0;

@@ -73,34 +73,38 @@ int main() {
     i2c_master_setup();
     ssd1306_setup();
     __builtin_enable_interrupts();
-    unsigned char i = 5,c=1,msg[30];
-    unsigned short v,a,b;
+    unsigned char msg[30];
+    float time=0,j;
     unsigned char add = 0b01000000; //Address always sent as write, changed to read in read func.
     
     writePin(add,0x00,0x00);
     writePin(add,0x01,0xFF);
     
     while (1) {
+        
         //Heartbeat led
         LATAbits.LATA4 = 1;
         delay(20);
         LATAbits.LATA4 = 0;
         delay(20);
+        _CP0_SET_COUNT(0);
         
         if (readPin(add,0x13)){ //GPIOB
             writePin(add,0x14,0b00000000); //OLATA
         } else{
             writePin(add,0x14,0b10000000); //OLATA
         }
-        sprintf(msg, "Hello Ed!");
+        sprintf(msg, "ABCDEFGHIJKLMNOPQRSTUVWXYZ");
         drawString(0,LINE1,msg);
         sprintf(msg, "Hello World!");
         drawString(0,LINE2,msg);
-        sprintf(msg, "1234567890");
+        sprintf(msg, "i = %.0f",j);
         drawString(0,LINE3,msg);
-        sprintf(msg, "i = %d",i);
-        drawString(0,LINE4,msg);
         ssd1306_update();
+        time = _CP0_GET_COUNT();
+        j++;
+        sprintf(msg, "FPS = %.2f", 1/(time/48000000));
+        drawString(60,LINE4,msg);
         
         
                
