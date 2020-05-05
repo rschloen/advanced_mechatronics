@@ -2,14 +2,12 @@
 // The functions must be called in the correct order as per the I2C protocol
 // I2C pins need pull-up resistors, 2k-10k
 #include "I2c_master_noint.h"
-#include "ssd1306.h"
-#include "font.h"
 #include <stdio.h>
 
 void i2c_master_setup(void) {
     // using a large BRG to see it on the nScope, make it smaller after verifying that code works
     // look up TPGD in the datasheet
-    I2C1BRG = 100; // I2CBRG = [1/(2*Fsck) - TPGD]*Pblck - 2 (TPGD is the Pulse Gobbler Delay)
+    I2C1BRG = 1000; // I2CBRG = [1/(2*Fsck) - TPGD]*Pblck - 2 (TPGD is the Pulse Gobbler Delay)
     I2C1CONbits.ON = 1; // turn on the I2C1 module
 }
 
@@ -21,9 +19,9 @@ void i2c_master_start(void) {
 }
 
 void i2c_master_restart(void) {
+    char m[30];       
     I2C1CONbits.RSEN = 1; // send a restart 
-    while (I2C1CONbits.RSEN) {
-        ;
+    while (I2C1CONbits.RSEN) {;
     } // wait for the restart to clear
 }
 
@@ -75,7 +73,6 @@ void writePin(unsigned char adr, unsigned char reg, unsigned char val){
 unsigned char readPin(unsigned char adr, unsigned char reg){
     unsigned char val;
     i2c_master_start();
-//    adr = adr & 0x00; //Force address to set to write
     i2c_master_send(adr);
     i2c_master_send(reg);
     i2c_master_restart();
@@ -88,26 +85,16 @@ unsigned char readPin(unsigned char adr, unsigned char reg){
 }
 
 void i2c_read_multi(unsigned char adr, unsigned char reg, unsigned char * data, int len){
-    char l,m[30];       
-//    sprintf(m,"Add = %d ",adr);
-//    drawString(0,8,m);
-//    ssd1306_update();
+    char l;       
     i2c_master_start();
     i2c_master_send(adr);
     i2c_master_send(reg);
-    sprintf(m,"Reg = %d",reg);
-    drawString(0,16,m);
-    ssd1306_update();
     i2c_master_restart();
-    adr = adr | 0b00000001;
-    sprintf(m,"Add = %d ",adr);
-    drawString(0,8,m);
-    ssd1306_update();
-
+    adr = adr | 0b00000001; //Force address to set to read
+    i2c_master_send(adr);
+    
     for (l=0;l<len-1;l++){
-        sprintf(m,"l = %d",l);
-        drawString(0,16,m);
-        ssd1306_update();
+    
         data[l] = i2c_master_recv();
         i2c_master_ack(0);
     }

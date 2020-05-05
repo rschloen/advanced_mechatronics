@@ -49,6 +49,13 @@ void delay(int t){
     while(_CP0_GET_COUNT() < 24000000/t);
 }
 
+void bar_x(signed short x){
+    
+}
+
+void bar_x(signed short x){
+    
+}
 
 int main() {
     __builtin_disable_interrupts(); // disable interrupts while initializing things
@@ -73,9 +80,9 @@ int main() {
     unsigned char msg[30];
     signed short imu_data[7];
 //    float time=0,j,hue;
-    unsigned char add = 0b01000000; //Address always sent as write, changed to read in read func.
-    writePin(add,0x00,0x00);
-    writePin(add,0x01,0xFF);
+//    unsigned char add = 0b01000000; //Address always sent as write, changed to read in read func.
+//    writePin(add,0x00,0x00);
+//    writePin(add,0x01,0xFF);
 //    hue = 0;
     while (1) {
         
@@ -84,13 +91,13 @@ int main() {
         delay(20);
         LATAbits.LATA4 = 0;
         delay(20);
-        sprintf(msg,"Reading imu...");
-        drawString(0,LINE1,msg);
-        ssd1306_update();
+//        sprintf(msg,"Reading imu...");
+//        drawString(0,LINE1,msg);
+//        ssd1306_update();
         imu_read(IMU_OUT_TEMP_L,imu_data,7);
-        sprintf(msg,"Read imu.");
-        drawString(0,LINE2,msg);
-        ssd1306_update();
+//        sprintf(msg,"Read imu.");
+//        drawString(0,LINE2,msg);
+//        ssd1306_update();
         if (1){
             sprintf(msg,"g: %d %d %d ",imu_data[1],imu_data[2],imu_data[3]);
             drawString(0,LINE1,msg);
@@ -98,10 +105,14 @@ int main() {
             drawString(0,LINE2,msg);
             sprintf(msg,"t: %d ",imu_data[0]);
             drawString(0,LINE3,msg);
+        }else{
+            bar_x(-imu_data[4]);
+            bar_y(imu_data[5]);
         }
         
         
         ssd1306_update();
+        ssd1306_clear();
         
         
         

@@ -1,12 +1,17 @@
 #include "imu.h"
 #include "I2c_master_noint.h"
-//#include
+#include "ssd1306.h"
+#include <stdio.h>
 void imu_setup(){
-    unsigned char who = 0;
+    unsigned char who = 0,m[30];
     //read from whoami
     who = readPin(IMU_ADDR,IMU_WHOAMI);
+    
     if (who != 0b01101001){
-        while(1){}
+        while(1){
+            sprintf(m,"Power Restart needed ");
+            drawString(0,0,m);
+            ssd1306_update();}
     }
     //init imu_ctrl1_xl
     writePin(IMU_ADDR,IMU_CTRL1_XL,0b10000010);
