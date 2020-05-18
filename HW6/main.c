@@ -50,10 +50,54 @@ void delay(int t){
 }
 
 void bar_x(signed short x){
-    
+    int i,max=20;
+    signed short x_new;
+    x_new = x/200;
+    if (x_new > max){
+        x_new = max;
+    }
+    if (x_new < -max){
+        x_new = -max;
+    }
+    for (i=-max;i<max;i++){
+            ssd1306_drawPixel(64,16+i,0);
+        }
+    if (x_new > 0){
+        for (i=0;i<x_new;i++){
+            ssd1306_drawPixel(64,16-i,1);            
+        }
+    }
+    if (x_new < 0){
+        for (i=0;i<-x_new;i++){
+            ssd1306_drawPixel(64,16+i,1);
+        }
+    }
 }
 
-void bar_x(signed short x){
+void bar_y(signed short y){
+    int i,max=20;
+    signed short y_new;
+    y_new = y/200;
+    if (y_new > max){
+        y_new = max;
+    }
+    if (y_new < -max){
+        y_new = -max;
+    }
+    for (i=-max;i<max;i++){
+            ssd1306_drawPixel(64+i,16,0);
+        }
+    if (y_new > 0){
+        for (i=0;i<y_new;i++){
+            ssd1306_drawPixel(64-i,16,1);
+        }
+    }
+    if (y_new < 0){
+        for (i=0;i<-y_new;i++){
+            ssd1306_drawPixel(64+i,16,1);
+        }
+    }
+    
     
 }
 
@@ -71,10 +115,11 @@ int main() {
     TRISAbits.TRISA4 = 0;
     LATAbits.LATA4 = 0;
     TRISBbits.TRISB4 = 1;
-    
+
     i2c_master_setup();
-    ssd1306_setup();
+    ssd1306_setup();    
     imu_setup();
+
 //    ws2812b_setup();
     __builtin_enable_interrupts();
     unsigned char msg[30];
@@ -84,6 +129,8 @@ int main() {
 //    writePin(add,0x00,0x00);
 //    writePin(add,0x01,0xFF);
 //    hue = 0;
+    ssd1306_clear();
+
     while (1) {
         
         //Heartbeat led
@@ -91,14 +138,8 @@ int main() {
         delay(20);
         LATAbits.LATA4 = 0;
         delay(20);
-//        sprintf(msg,"Reading imu...");
-//        drawString(0,LINE1,msg);
-//        ssd1306_update();
         imu_read(IMU_OUT_TEMP_L,imu_data,7);
-//        sprintf(msg,"Read imu.");
-//        drawString(0,LINE2,msg);
-//        ssd1306_update();
-        if (1){
+        if (0){
             sprintf(msg,"g: %d %d %d ",imu_data[1],imu_data[2],imu_data[3]);
             drawString(0,LINE1,msg);
             sprintf(msg,"a: %d %d %d ",imu_data[4],imu_data[5],imu_data[6]);
@@ -112,7 +153,7 @@ int main() {
         
         
         ssd1306_update();
-        ssd1306_clear();
+//        ssd1306_clear();
         
         
         
